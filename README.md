@@ -1,42 +1,73 @@
-# Installation
+# vrit-test-automation
 
-1. Clone the repo
+## Quick summary
+This repo contains automation tests implemented in Python using Selenium and pytest. The instructions below assume a typical development machine (macOS/Linux/Windows WSL). 
+
+## Prerequisites
+- Git
+- Python 3.10 or 3.11 (3.8+ may work, but examples use 3.10+)
+- pip (comes with Python)
+- Google Chrome (or Firefox) browser for browser-based tests
+
+Driver versions
+- Selenium Python package: 4.8+ (install via requirements)
+- Chrome and ChromeDriver: ChromeDriver must match the installed Chrome major version. Example: Chrome 116 requires ChromeDriver 116.x.
+
+## Environment / Setup
+- Python: 3.10 or 3.11
+- Selenium: 4.8+
+- pytest: 7.0+
+- webdriver-manager: latest
+- OS: macOS / Linux / Windows (WSL recommended for Windows)
+- Browser: Chrome (recommended)
+
+## Installation (step-by-step)
+
+1. Clone your repo and enter it:
    ```bash
    git clone https://github.com/user/vrit-test-automation.git
-   cd </user/vrit-test-automation>
+   cd vrit-test-automation
    ```
 
-2. Prerequisites
-   - For Python: Python 3.8+ and pip
-
-3. Python setup (if project is Python)
+2. Create and activate a Python virtual environment:
+   macOS / Linux
    ```bash
    python -m venv .venv
-   source .venv/bin/activate      # macOS/Linux
-   .venv\Scripts\activate         # Windows (PowerShell)
-   pip install -r requirements.txt
+   source .venv/bin/activate
+   ```
+   Windows (PowerShell)
+   ```powershell
+   python -m venv .venv
+   .\.venv\Scripts\Activate.ps1
    ```
 
-4. Configuration
-   - Copy example env/config and update secrets:
+3. Install dependencies:
+   - Install the packages:
      ```bash
-     cp .env.example .env
-     # edit .env and/or config.yml with required values (API keys, endpoints, etc.)
+     pip install selenium pytest webdriver-manager python-dotenv
      ```
 
-# Running / Starting
-
-1. Run the main automation task (Python example)
+4. Verify Python & pip:
    ```bash
-   # run once with a config
-   python -m automation.main --config config.yml
-
-   # dry-run example
-   python -m automation.main --config config.yml --dry-run
+   python --version
+   pip --version
    ```
 
-2. Run automation tests
-   ```bash
-   # Python
-   pytest tests/
 
+## Configuration / Environment variables
+
+1. Copy the example env file and update:
+   ```bash
+   cp .env.example .env
+   ```
+   If `.env.example` is not present, create a `.env` file in the repo root.
+
+## How to run the tests
+
+1. Ensure `.env` is set.
+
+2. Run all tests:
+   ```bash
+   python3 testdemo_abhishek.py
+   ```
+---
