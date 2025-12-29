@@ -32,41 +32,30 @@ Driver versions
 2. Create and activate a Python virtual environment:
    macOS / Linux
    ```bash
-   python -m venv .venv
+   python3 -m venv .venv
    source .venv/bin/activate
    ```
    Windows (PowerShell)
    ```powershell
-   python -m venv .venv
+   python3 -m venv .venv
    .\.venv\Scripts\Activate.ps1
    ```
 
 3. Install dependencies:
    - Install the packages:
      ```bash
-     pip install selenium pytest webdriver-manager python-dotenv
+     pip3 install selenium pytest webdriver-manager python-dotenv
      ```
 
 4. Verify Python & pip:
    ```bash
-   python --version
-   pip --version
+   python3 --version
+   pip3 --version
    ```
-
-
-## Configuration / Environment variables
-
-1. Copy the example env file and update:
-   ```bash
-   cp .env.example .env
-   ```
-   If `.env.example` is not present, create a `.env` file in the repo root.
 
 ## How to run the tests
 
-1. Ensure `.env` is set.
-
-2. Run all tests:
+1. Run all tests:
    ```bash
    python3 testdemo_abhishek.py
    ```

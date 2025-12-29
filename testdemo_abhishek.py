@@ -357,12 +357,12 @@ upload_business = wait.until(
 )
 upload_business.click()
 
-driver.find_element(By.ID, "uploadBtn").click()
+
+#driver.find_element(By.ID, "uploadBtn").click()
 
 file_input = driver.find_element(By.XPATH, "//input[@type='file']")
-file_input.send_keys("/Users/abhishekbhandari/icloud/Downloads/Task.pdf")
+file_input.send_keys("/Users/abhishekbhandari/Downloads/Task.pdf")
 
-file_input.click()
 
 submit_button = wait.until(
     EC.element_to_be_clickable(
