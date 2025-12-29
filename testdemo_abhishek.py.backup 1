@@ -1,0 +1,231 @@
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import string
+import random
+import time
+import re
+
+
+# ---------- Config ----------
+options = Options()
+options.add_experimental_option("detach", True)  # Keep Chrome open after script ends
+
+# ---------- Helper Functions ----------
+def generate_random_email():
+    username = "abi_" + ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
+    return f"{username}@yopmail.com"
+
+def generate_random_nepali_phone():
+    # Start with 9, then 9 random digits
+    return '9801' + ''.join(random.choices('0123456789', k=6))
+
+# Example usage
+random_nepali_number = generate_random_nepali_phone()
+print(random_nepali_number)
+
+# ---------- Start WebDriver ----------
+driver = webdriver.Chrome(options=options)
+driver.get("https://authorized-partner.vercel.app/")
+wait = WebDriverWait(driver, 15)
+
+# ---------- Step 1: Get Started ----------
+get_started_button = wait.until(
+    EC.element_to_be_clickable((By.XPATH, "//button[normalize-space()='Get Started']"))
+)
+get_started_button.click()
+
+# ---------- Step 2: I Agree ----------
+get_iagree_button = wait.until(
+    EC.element_to_be_clickable((By.XPATH, "/html/body/div[3]/div[4]/div[3]/div/button"))
+)
+get_iagree_button.click()
+
+# ---------- Step 3: Continue ----------
+get_continue_button = wait.until(
+    EC.element_to_be_clickable((By.XPATH, "//a/button[normalize-space()='Continue']"))
+)
+get_continue_button.click()
+
+# ---------- Step 4: Fill Personal Info ----------
+# First Name
+first_name_input = wait.until(
+    EC.element_to_be_clickable((By.XPATH, "//input[@placeholder='Enter Your First Name']"))
+)
+first_name_input.send_keys("Abhishek")
+
+# Last Name
+last_name_input = wait.until(
+    EC.element_to_be_clickable((By.XPATH, "//input[@placeholder='Enter Your Last Name']"))
+)
+last_name_input.send_keys("Bhandari")
+
+# Email
+email_input = wait.until(
+    EC.element_to_be_clickable((By.XPATH, "//input[@type='email' or contains(@placeholder,'Email')]"))
+)
+email = generate_random_email()
+print("Generated email:", email)
+email_input.clear()
+email_input.send_keys(email)
+
+# Phone Number
+# Phone Number (Nepali 10-digit format)
+number_input = wait.until(
+    EC.element_to_be_clickable((By.XPATH, "/html/body/div[3]/div[4]/div/div/div/div[2]/form/div[2]/div[2]/div/div/input"))
+)
+
+random_nepali_number = generate_random_nepali_phone()
+print("Generated Nepali phone number:", random_nepali_number)
+
+number_input.clear()
+number_input.click()
+number_input.send_keys(random_nepali_number)
+time.sleep(2)
+
+# Password
+password_input = wait.until(
+    EC.element_to_be_clickable((By.XPATH, "/html/body/div[3]/div[4]/div/div/div/div[2]/form/div[3]/div[1]/div[1]/input"))
+)
+password_input.send_keys("Testing123!")
+
+# Confirm Password
+confirm_password_input = wait.until(
+    EC.element_to_be_clickable((By.XPATH, "/html/body/div[3]/div[4]/div/div/div/div[2]/form/div[3]/div[2]/div[1]/input"))
+)
+confirm_password_input.send_keys("Testing123!")
+
+# Next Button
+next_button_personal = wait.until(
+    EC.element_to_be_clickable((By.XPATH, "//button[normalize-space()='Next']"))
+)
+next_button_personal.click()
+
+print("Form filled successfully!")
+
+
+# ---------------- OPEN YOPMAIL ----------------
+driver.execute_script("window.open('https://yopmail.com','_blank')")
+driver.switch_to.window(driver.window_handles[1])
+wait = WebDriverWait(driver, 30)
+
+inbox = email.split("@")[0]
+
+login_input = wait.until(EC.element_to_be_clickable((By.ID, "login")))
+login_input.clear()
+login_input.send_keys(inbox)
+login_input.send_keys(Keys.RETURN)
+
+
+# ---------------- OTP FETCH ----------------
+otp = None
+
+for attempt in range(1, 11):
+    try:
+        wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "ifmail")))
+
+        body_text = driver.find_element(By.TAG_NAME, "body").text
+        print(body_text)
+
+        match = re.search(r"code below:\s*(\d{4,6})", body_text, re.IGNORECASE)
+        if match:
+            otp = match.group(1)
+            print("OTP Captured:", otp)
+            break
+
+    except:
+        print("Waiting for OTP...")
+
+    finally:
+        driver.switch_to.default_content()
+
+    driver.find_element(By.ID, "refresh").click()
+    time.sleep(3)
+
+if not otp:
+    raise Exception("OTP not received")
+
+
+# ---------------- OTP SUBMISSION ----------------
+driver.switch_to.window(driver.window_handles[0])
+wait = WebDriverWait(driver, 30)
+
+# ---------- Locate OTP input (your provided XPath) ----------
+otp_input = wait.until(
+    EC.element_to_be_clickable(
+        (By.XPATH, "/html/body/div[3]/div[4]/div/div/div/div[2]/div/form/div[1]/div[2]/input")
+    )
+)
+
+# Scroll & focus (important for React / Angular)
+driver.execute_script("arguments[0].scrollIntoView({block:'center'});", otp_input)
+time.sleep(0.3)
+otp_input.click()
+
+# Clear & inject OTP via JS
+driver.execute_script("arguments[0].value = '';", otp_input)
+driver.execute_script(
+    "arguments[0].value = arguments[1];", otp_input, otp
+)
+
+# Dispatch React events (CRITICAL)
+driver.execute_script("""
+arguments[0].dispatchEvent(new Event('input', { bubbles: true }));
+arguments[0].dispatchEvent(new Event('change', { bubbles: true }));
+arguments[0].dispatchEvent(new KeyboardEvent('keyup', { bubbles: true }));
+""", otp_input)
+
+time.sleep(0.5)
+
+# ---------- Locate VERIFY button (FIXED) ----------
+verify_button = wait.until(
+    EC.element_to_be_clickable(
+        (By.XPATH, "//button[not(@disabled) and (contains(.,'Verify') or contains(.,'Submit'))]")
+    )
+)
+
+# Click Verify using JS (more reliable)
+driver.execute_script("arguments[0].click();", verify_button)
+
+print("✅ OTP submitted successfully")
+
+
+
+# ---------------- AGENCY DETAILS ----------------
+wait.until(EC.element_to_be_clickable(
+    (By.XPATH, "//input[@placeholder='Agency Name']"))
+).send_keys("The Authorized Partner")
+
+wait.until(EC.element_to_be_clickable(
+    (By.XPATH, "//input[@placeholder='Your Role']"))
+).send_keys("QA Intern")
+
+wait.until(EC.element_to_be_clickable(
+    (By.XPATH, "//input[@placeholder='Agency Email']"))
+).send_keys("abhibhan@yopmail.com")
+
+wait.until(EC.element_to_be_clickable(
+    (By.XPATH, "//input[@placeholder='Agency Website']"))
+).send_keys("https://linkedin.com")
+
+wait.until(EC.element_to_be_clickable(
+    (By.XPATH, "//input[@placeholder='Address']"))
+).send_keys("Imadol, Lalitpur")
+
+region = wait.until(EC.element_to_be_clickable(
+    (By.XPATH, "//button[@role='combobox']"))
+)
+region.click()
+
+wait.until(EC.element_to_be_clickable(
+    (By.XPATH, "//div[normalize-space()='Canada']"))
+).click()
+
+wait.until(EC.element_to_be_clickable(
+    (By.XPATH, "//button[normalize-space()='Next']"))
+).click()
+
+print("Agency details submitted successfully")
